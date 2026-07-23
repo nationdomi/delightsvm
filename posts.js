@@ -298,8 +298,8 @@ function getPalette(theme) {
       return {
         bgKind: "solid",
         bgSolid: COLORS.cream,
-        blob1: "rgba(251,216,191,.85)",  // peach top-right
-        blob2: "rgba(244,199,192,.75)",  // blush bottom-left
+        blob1: "rgba(251, 216, 191, 0.45)",  // peach top-right
+        blob2: "rgba(244, 199, 192, 0.45)",  // blush bottom-left
         dot: COLORS.gold,
         dotAlpha: .18,
         dotCount: 24,
@@ -310,7 +310,7 @@ function getPalette(theme) {
         cardBg: "#FFFFFF",
         cardBorder: null,
         cardText: COLORS.chocolate,
-        cardShadow: "rgba(59,36,22,.16)",
+        cardShadow: "rgba(255, 255, 255, 0.16)",
         ctaBg: COLORS.wine,
         ctaText: "#FFFFFF",
         chipBg: "rgba(255,255,255,.95)",
@@ -345,17 +345,17 @@ function drawBackground(ctx, L, theme) {
   ctx.fillRect(0, 0, W, H);
 
   // Blobs opcionales
-  if (pal.blob1) {
+if (pal.blob1) {
     const g1 = ctx.createRadialGradient(W * .82, H * .12, 40, W * .82, H * .12, W * .55);
     g1.addColorStop(0, pal.blob1);
-    g1.addColorStop(1, "rgba(0,0,0,0)");
+    g1.addColorStop(1, "rgba(250,245,238,0)"); // <-- AQUÍ
     ctx.fillStyle = g1;
     ctx.fillRect(0, 0, W, H);
   }
   if (pal.blob2) {
     const g2 = ctx.createRadialGradient(W * .12, H * .88, 40, W * .12, H * .88, W * .6);
     g2.addColorStop(0, pal.blob2);
-    g2.addColorStop(1, "rgba(0,0,0,0)");
+    g2.addColorStop(1, "rgba(250,245,238,0)"); // <-- AQUÍ
     ctx.fillStyle = g2;
     ctx.fillRect(0, 0, W, H);
   }
