@@ -729,31 +729,35 @@ function renderFrame(progress) {
     ctx.fillStyle = pal.textSecondary;
     ctx.globalAlpha = .6;
     ctx.font = `italic 500 60px "Fraunces", serif`;
-    ctx.fillText("Elige los postres", L.W/2, L.H/2 - 40);
+    ctx.fillText("Elegí los postres", L.W/2, L.H/2 - 40);
     ctx.font = `500 32px "Manrope", sans-serif`;
     ctx.fillText("disponibles hoy", L.W/2, L.H/2 + 30);
     ctx.restore();
     return;
   }
 
-  // Timeline:
+  // Remapeamos el tiempo total (0.0 a 1.0) para que toda la animación ocurra
+  // dentro del primer 37.5% del video (3s de 8s). El resto (62.5% / 5s) queda estático al 100%.
+  const animProgress = clamp(progress / 0.375, 0, 1);
+
+  // Nueva línea de tiempo dentro de los primeros 3 segundos:
   // 0.00-0.10 → logo
-  // 0.10-0.28 → título
-  // 0.28-0.75 → productos escalonados
-  // 0.80-1.00 → footer
-  const logoP = clamp(progress / 0.10, 0, 1);
+  // 0.10-0.30 → título
+  // 0.30-0.75 → productos escalonados
+  // 0.75-1.00 → footer
+  const logoP = clamp(animProgress / 0.10, 0, 1);
   drawLogo(ctx, L, logoP, theme);
 
-  const titleP = clamp((progress - 0.10) / 0.18, 0, 1);
-  const titleOp = clamp((progress - 0.10) / 0.08, 0, 1);
+  const titleP = clamp((animProgress - 0.10) / 0.20, 0, 1);
+  const titleOp = clamp((animProgress - 0.10) / 0.10, 0, 1);
   drawTitle(ctx, L, state.title, state.subtitle, titleOp, titleP, theme);
 
   const nProducts = products.length;
-  const productsWindow = 0.75 - 0.28;
+  const productsWindow = 0.75 - 0.30;
   const perProduct = productsWindow / Math.max(nProducts, 1);
   products.forEach((product, i) => {
-    const start = 0.28 + i * (perProduct * 0.7);
-    const p = clamp((progress - start) / (perProduct * 1.3), 0, 1);
+    const start = 0.30 + i * (perProduct * 0.7);
+    const p = clamp((animProgress - start) / (perProduct * 1.3), 0, 1);
     if (state.style === "menu") {
       drawProductRowMenu(ctx, L, L.rects[i], product, p, theme);
     } else {
@@ -761,9 +765,10 @@ function renderFrame(progress) {
     }
   });
 
-  const footerP = clamp((progress - 0.80) / 0.15, 0, 1);
+  const footerP = clamp((animProgress - 0.75) / 0.25, 0, 1);
   drawFooter(ctx, L, footerP, theme);
 }
+
 
 /* ============ FLUJO DE PREVIEW (dibujar estado final) ============ */
 function renderStatic() {
