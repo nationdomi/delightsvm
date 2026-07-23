@@ -729,7 +729,7 @@ function renderFrame(progress) {
     ctx.fillStyle = pal.textSecondary;
     ctx.globalAlpha = .6;
     ctx.font = `italic 500 60px "Fraunces", serif`;
-    ctx.fillText("Elegí los postres", L.W/2, L.H/2 - 40);
+    ctx.fillText("Elige los postres", L.W/2, L.H/2 - 40);
     ctx.font = `500 32px "Manrope", sans-serif`;
     ctx.fillText("disponibles hoy", L.W/2, L.H/2 + 30);
     ctx.restore();
