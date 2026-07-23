@@ -698,7 +698,7 @@ function drawFooter(ctx, L, progress, theme) {
   ctx.textBaseline = "middle";
   ctx.fillStyle = pal.ctaText;
   ctx.font = `700 34px "Manrope", sans-serif`;
-  ctx.fillText("Pedí hoy por WhatsApp", L.W/2, ctaY + ctaHeight/2);
+  ctx.fillText("Pide ya por WhatsApp", L.W/2, ctaY + ctaHeight/2);
 
   ctx.font = `500 26px "Manrope", sans-serif`;
   ctx.fillStyle = pal.textSecondary;
@@ -729,7 +729,7 @@ function renderFrame(progress) {
     ctx.fillStyle = pal.textSecondary;
     ctx.globalAlpha = .6;
     ctx.font = `italic 500 60px "Fraunces", serif`;
-    ctx.fillText("Elegí los postres", L.W/2, L.H/2 - 40);
+    ctx.fillText("Elige los postres", L.W/2, L.H/2 - 40);
     ctx.font = `500 32px "Manrope", sans-serif`;
     ctx.fillText("disponibles hoy", L.W/2, L.H/2 + 30);
     ctx.restore();
@@ -1044,18 +1044,30 @@ async function tryRecordCanvas(preferKind) {
   recorder.start(200);   // chunks cada 200ms — clave para Safari y algunas versiones de Chrome
   console.log(`[video] Recorder iniciado, state=${recorder.state}`);
 
-  const startT = performance.now();
+const totalFrames = Math.round((CFG.DURATION_MS / 1000) * CFG.FPS);
   const recTime = document.getElementById("rec-time");
+
   await new Promise((resolve) => {
-    function frame(now) {
-      const elapsed = now - startT;
-      const t = clamp(elapsed / CFG.DURATION_MS, 0, 1);
+    let currentFrame = 0;
+
+    function renderNextStep() {
+      const t = currentFrame / totalFrames;
       renderFrame(t);
-      recTime.textContent = (elapsed / 1000).toFixed(1);
-      if (t >= 1) { setTimeout(resolve, 400); return; }
-      requestAnimationFrame(frame);
+
+      const elapsedSec = (t * (CFG.DURATION_MS / 1000)).toFixed(1);
+      recTime.textContent = elapsedSec;
+
+      if (currentFrame >= totalFrames) {
+        renderFrame(1);
+        setTimeout(resolve, 500);
+        return;
+      }
+
+      currentFrame++;
+      setTimeout(renderNextStep, 1000 / CFG.FPS);
     }
-    requestAnimationFrame(frame);
+
+    renderNextStep();
   });
 
   if (recorder.state !== "inactive") {
