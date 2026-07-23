@@ -22,6 +22,7 @@ window.PRODUCTS = [
     price: 2.00,
     badge: { type: "new", label: "Nuevo" },
     photo: "assets/products/chococrunch.jpg",
+    focalY: 0.63,
     description: "Capas de bizcocho de chocolate súper húmedo intercaladas con capas de ganache de chocolate. Coronado con nuestra capa mega crujiente de cereal envuelto en crema de avellanas.",
   },
   {
@@ -31,6 +32,7 @@ window.PRODUCTS = [
     categoryLabel: "Edición Chocolate",
     price: 1.50,
     photo: "assets/products/vaso-oreo.jpg",
+    focalY: 0.66,
     description: "Capas de bizcocho de chocolate húmedo, dulce de leche y doble crema de galleta oreo, con un topping de chispas de chocolate.",
   },
   {
@@ -40,6 +42,7 @@ window.PRODUCTS = [
     categoryLabel: "Edición Chocolate",
     price: 1.75,
     photo: "assets/products/chocotorta.jpg",
+    focalY: 0.64,
     description: "Capas de bizcocho de chocolate húmedo, relleno de crema de chocotorta argentina con dulce de leche y queso crema, coronado con chips de chocolate.",
   },
   {
@@ -50,6 +53,7 @@ window.PRODUCTS = [
     price: 1.75,
     badge: { type: "special", label: "Ed. Especial" },
     photo: "assets/products/vaso-patagonico.jpg",
+    focalY: 0.61,
     description: "Capas de bizcocho húmedo de chocolate, mermelada casera de frutos rojos, y una ganache de crema Bariloche. Coronado con trozos de Franui y de arándanos cubiertos en chocolate.",
   },
   {
@@ -59,6 +63,7 @@ window.PRODUCTS = [
     categoryLabel: "Edición Chocolate",
     price: 1.75,
     photo: "assets/products/noir-maracuya.jpg",
+    focalY: 0.59,
     description: "Capas de bizcocho de chocolate húmedo, relleno con un brigadeiro de maracuyá. Coronado con una ganache de chocolate semiamargo mezclada con crema de avellanas, y finalizado con frambuesas bañadas en chocolate con maracuyá.",
   },
 
@@ -70,6 +75,7 @@ window.PRODUCTS = [
     categoryLabel: "Cheesecake",
     price: 1.75,
     photo: "assets/products/cheesecake-frutos-rojos.jpg",
+    focalY: 0.78,
     description: "Nuestra clásica crema de cheesecake sobre base crocante de vainilla, coronada con mermelada artesanal de frutos rojos.",
   },
   {
@@ -79,6 +85,7 @@ window.PRODUCTS = [
     categoryLabel: "Cheesecake",
     price: 1.75,
     photo: "assets/products/cheesecake-galak.jpg",
+    focalY: 0.55,
     description: "Un cheesecake clásico y suave realzado con una generosa capa de ganache de chocolate 100% Galak, protagonista del sabor y la experiencia.",
   },
   {
@@ -88,6 +95,7 @@ window.PRODUCTS = [
     categoryLabel: "Cheesecake",
     price: 1.50,
     photo: "assets/products/cheesecake-maracuya.jpg",
+    focalY: 0.5,
     description: "Base de galleta de vainilla, crema sedosa de cheesecake con pulpa de maracuyá y topping de mermelada artesanal de maracuyá.",
   },
   {
@@ -97,6 +105,7 @@ window.PRODUCTS = [
     categoryLabel: "Cheesecake",
     price: 1.50,
     photo: "assets/products/cheesecake-higos.jpg",
+    focalY: 0.48,
     description: "Crema de cheesecake con higos dentro de su mezcla, endulzado con su propio almíbar, base crocante de galleta de vainilla y coronado con una reducción artesanal de higos.",
   },
 
@@ -109,6 +118,7 @@ window.PRODUCTS = [
     price: 1.50,
     badge: { type: "top", label: "Más Vendido" },
     photo: "assets/products/pave-leche-vaquita.jpg",
+    focalY: 0.82,
     description: "Elaborado con leche en polvo La Vaquita integrada en la mezcla, entre cada capa y también en la superficie.",
   },
   {
@@ -118,6 +128,7 @@ window.PRODUCTS = [
     categoryLabel: "Pavé Tradicional",
     price: 1.50,
     photo: "assets/products/pave-quipitos.jpg",
+    focalY: 0.8,
     description: "Un guiño a la infancia, se cubre con una generosa capa de quipitos que aportan color, textura y un toque divertido.",
   },
   {
@@ -127,6 +138,7 @@ window.PRODUCTS = [
     categoryLabel: "Pavé Tradicional",
     price: 1.50,
     photo: "assets/products/pave-milo.jpg",
+    focalY: 0.82,
     description: "Capas de nuestra crema de pavé hecha con milo, Milo entre capas y en la superficie, coronado con gotas de chocolate.",
   },
 
@@ -139,6 +151,7 @@ window.PRODUCTS = [
     price: 1.75,
     badge: { type: "premium", label: "Premium" },
     photo: "assets/products/pave-franui.jpg",
+    focalY: 0.69,
     description: "Nuestro sabor más premium. Base de crema tradicional, capa de mermelada artesanal de frutos rojos y una delicada cobertura de chocolate semiamargo, coronado con franuis.",
   },
   {
@@ -148,6 +161,7 @@ window.PRODUCTS = [
     categoryLabel: "Pavé Premium",
     price: 1.75,
     photo: "assets/products/pave-oreo.jpg",
+    focalY: 0.5,
     description: "Su crema está fusionada con el relleno original de las galletas Oreo, acompañada de trozos y capas de oreo triturada que aportan textura.",
   },
 
@@ -159,6 +173,7 @@ window.PRODUCTS = [
     categoryLabel: "Toque Fresco",
     price: 1.50,
     photo: "assets/products/carlota-durazno.jpg",
+    focalY: 0.75,
     description: "Cremosa, delicada y con un toque fresco que la hace especial, terminada con un merengue suizo flameado para un contraste suave.",
   },
   {
@@ -168,6 +183,7 @@ window.PRODUCTS = [
     categoryLabel: "Toque Fresco",
     price: 1.50,
     photo: "assets/products/lemon-pie-cup.jpg",
+    focalY: 0.68,
     description: "Capas de crema de limón, combinadas con capas de galleta de vainilla intercaladas, y coronado con una irresistible capa de merengue suizo flameado.",
   },
 
@@ -179,6 +195,7 @@ window.PRODUCTS = [
     categoryLabel: "Gelatina",
     price: 1.00,
     photo: "assets/products/gelatina-mosaico.jpg",
+    focalY: 0.74,
     description: "Cuatro sabores de gelatina en cubos envueltos en una base cremosa de gelatina elaborada con tres tipos de leche.",
   },
 ];

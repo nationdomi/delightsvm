@@ -33,14 +33,15 @@ const COLORS = {
 };
 
 const state = {
-  format: "portrait",
+  format: "story",     // por default: Instagram Story 9:16
   style: "grid",       // grid | menu
-  theme: "warm",       // warm | chocolate
+  theme: "warm",       // warm | vino | rosa | terracota
+  showDesc: false,     // mostrar resumen de descripción en la card
   title: "Disponibles hoy",
   subtitle: "",
   selectedIds: [],
   logoImg: null,
-  logoInvertedImg: null,  // versión blanca del logo para fondo chocolate
+  logoInvertedImg: null,
   productImgs: new Map(),
 };
 
@@ -77,20 +78,22 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-function drawImageCover(ctx, img, dx, dy, dw, dh) {
+function drawImageCover(ctx, img, dx, dy, dw, dh, focalY = 0.5, focalX = 0.5) {
   const sr = img.width / img.height;
   const dr = dw / dh;
   let sx, sy, sw, sh;
   if (sr > dr) {
+    // Source más ancho que destino → recortar los lados
     sh = img.height;
     sw = sh * dr;
-    sx = (img.width - sw) / 2;
+    sx = clamp(img.width * focalX - sw / 2, 0, img.width - sw);
     sy = 0;
   } else {
+    // Source más alto que destino → recortar arriba/abajo usando focalY
     sw = img.width;
     sh = sw / dr;
     sx = 0;
-    sy = (img.height - sh) / 2;
+    sy = clamp(img.height * focalY - sh / 2, 0, img.height - sh);
   }
   ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
 }
@@ -462,93 +465,168 @@ function drawProductCardGrid(ctx, L, rect, product, entryProgress, theme) {
   ctx.translate(-cx, -cy - translateY);
   ctx.translate(0, translateY);
 
-  const radius = 32;
+  // ─────── FOTO REDONDA (protagonista, centrada en el postre via focalY) ───────
+  const focalY = product.focalY ?? 0.5;
+  const focalX = product.focalX ?? 0.5;
 
-  // Card fondo
+  // El círculo de foto ocupa la parte superior de la card
+  const photoDiameter = Math.min(rect.w * 0.82, rect.h * 0.58);
+  const photoR = photoDiameter / 2;
+  const photoCX = rect.x + rect.w / 2;
+  const photoCY = rect.y + photoR + rect.w * 0.06;   // pequeño offset arriba
+
+  // Sombra del círculo
   ctx.save();
   ctx.shadowColor = pal.cardShadow;
-  ctx.shadowBlur = 24;
-  ctx.shadowOffsetY = 8;
-  ctx.fillStyle = pal.cardBg;
-  roundRect(ctx, rect.x, rect.y, rect.w, rect.h, radius);
+  ctx.shadowBlur = 28;
+  ctx.shadowOffsetY = 10;
+  ctx.fillStyle = "rgba(255,255,255,0.02)"; // sombra visible pero transparente
+  ctx.beginPath();
+  ctx.arc(photoCX, photoCY, photoR, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
-  if (pal.cardBorder) {
-    ctx.strokeStyle = pal.cardBorder;
-    ctx.lineWidth = 1.5;
-    roundRect(ctx, rect.x, rect.y, rect.w, rect.h, radius);
+
+  // Anillo sutil alrededor del círculo (varía según tema)
+  if (theme === "warm" || theme === "rosa") {
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,.75)";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(photoCX, photoCY, photoR + 2, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.restore();
+  } else if (theme === "vino" || theme === "terracota") {
+    ctx.save();
+    ctx.strokeStyle = "rgba(228,198,138,.55)";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(photoCX, photoCY, photoR + 2, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
   }
 
-  // Foto arriba
-  const photoH = rect.h * 0.68;
+  // Clip circular + dibujo con focalY (así el postre queda centrado)
   ctx.save();
   ctx.beginPath();
-  const rr = radius;
-  const px = rect.x, py = rect.y, pw = rect.w, ph = photoH;
-  ctx.moveTo(px + rr, py);
-  ctx.lineTo(px + pw - rr, py);
-  ctx.arcTo(px + pw, py, px + pw, py + rr, rr);
-  ctx.lineTo(px + pw, py + ph);
-  ctx.lineTo(px, py + ph);
-  ctx.lineTo(px, py + rr);
-  ctx.arcTo(px, py, px + rr, py, rr);
+  ctx.arc(photoCX, photoCY, photoR, 0, Math.PI * 2);
   ctx.clip();
-  drawImageCover(ctx, img, px, py, pw, ph);
+  drawImageCover(ctx, img,
+    photoCX - photoR, photoCY - photoR,
+    photoDiameter, photoDiameter,
+    focalY, focalX
+  );
   ctx.restore();
 
-  const textAreaY = rect.y + photoH;
-  const textAreaH = rect.h - photoH;
-  const nameY = textAreaY + textAreaH * 0.28;
-  const priceY = textAreaY + textAreaH * 0.68;
-
-  // Chip categoría
-  const chipY = rect.y + 18;
-  const chipX = rect.x + 18;
-  const chipText = product.categoryLabel.toUpperCase();
-  ctx.font = `700 16px "Manrope", sans-serif`;
-  const chipTextW = ctx.measureText(chipText).width;
-  const chipPad = 12;
-  ctx.fillStyle = pal.chipBg;
-  roundRect(ctx, chipX, chipY, chipTextW + chipPad*2, 26, 13);
-  ctx.fill();
-  ctx.fillStyle = pal.chipText;
-  ctx.textAlign = "left";
-  ctx.textBaseline = "middle";
-  ctx.fillText(chipText, chipX + chipPad, chipY + 13);
-
-  // Badge
+  // Badge (chip flotante sobre el círculo, esquina superior derecha)
   if (product.badge) {
     const bg = product.badge;
     const badgeText = bg.label.toUpperCase();
     ctx.font = `800 15px "Manrope", sans-serif`;
     const bTextW = ctx.measureText(badgeText).width;
-    const bx = rect.x + rect.w - bTextW - 24 - 18;
-    const by = chipY;
+    const bx = photoCX + photoR * 0.65 - (bTextW + 24) / 2;
+    const by = photoCY - photoR * 0.85;
     const badgeColors = { new: COLORS.wine, top: "#D95C42", premium: COLORS.gold, special: "#4E7BA0" };
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,.20)";
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetY = 2;
     ctx.fillStyle = badgeColors[bg.type] || COLORS.wine;
     roundRect(ctx, bx, by, bTextW + 24, 26, 13);
     ctx.fill();
+    ctx.restore();
     ctx.fillStyle = "white";
     ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
     ctx.fillText(badgeText, bx + 12, by + 13);
   }
 
-  // Nombre
+  // ─────── TEXTO DEBAJO ───────
+  const textStartY = photoCY + photoR + rect.w * 0.07;
+  const textCenterX = rect.x + rect.w / 2;
+  const textMaxW = rect.w - 30;
+
+  // Categoría (pequeña, arriba del nombre)
   ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillStyle = pal.cardText;
-  const nameSize = Math.min(30, rect.w / 12);
+  ctx.textBaseline = "top";
+  ctx.font = `700 14px "Manrope", sans-serif`;
+  ctx.fillStyle = pal.accent;
+  ctx.globalAlpha = opacity * 0.85;
+  ctx.fillText(product.categoryLabel.toUpperCase(), textCenterX, textStartY);
+  ctx.globalAlpha = opacity;
+
+  // Nombre
+  const nameSize = Math.min(30, rect.w / 11);
   ctx.font = `500 ${nameSize}px "Fraunces", serif`;
-  wrapText(ctx, product.name, rect.x + rect.w/2, nameY, rect.w - 40, nameSize * 1.15);
+  ctx.fillStyle = pal.cardText;
+  const nameY = textStartY + 24;
+  const namelinesEndY = wrapTextReturn(ctx, product.name, textCenterX, nameY, textMaxW, nameSize * 1.15);
+
+  // Descripción (solo si el toggle está activo y el producto la tiene)
+  let priceY;
+  if (state.showDesc && product.description) {
+    const descSize = Math.max(13, Math.min(15, rect.w / 22));
+    ctx.font = `400 ${descSize}px "Manrope", sans-serif`;
+    ctx.fillStyle = pal.textSecondary;
+    ctx.globalAlpha = opacity * 0.85;
+    const descStartY = namelinesEndY + 10;
+    // Descripción condensada: primeras ~10-14 palabras
+    const desc = condenseDescription(product.description, 90);
+    const descEndY = wrapTextReturn(ctx, desc, textCenterX, descStartY, textMaxW, descSize * 1.4, 3);
+    ctx.globalAlpha = opacity;
+    priceY = descEndY + 14;
+  } else {
+    priceY = namelinesEndY + 14;
+  }
 
   // Precio
-  const priceSize = Math.min(40, rect.w / 8);
+  const priceSize = Math.min(38, rect.w / 8.5);
   ctx.font = `600 ${priceSize}px "Fraunces", serif`;
   ctx.fillStyle = pal.accent;
-  ctx.fillText(fmtPrice(product.price), rect.x + rect.w/2, priceY);
+  ctx.fillText(fmtPrice(product.price), textCenterX, priceY);
 
   ctx.restore();
+}
+
+// Wrap con líneas máximas opcional; retorna el Y donde termina la última línea
+function wrapTextReturn(ctx, text, cx, y, maxW, lineH, maxLines = Infinity) {
+  const words = text.split(" ");
+  const lines = [];
+  let current = "";
+  for (const w of words) {
+    const test = current ? current + " " + w : w;
+    if (ctx.measureText(test).width > maxW && current) {
+      lines.push(current);
+      current = w;
+      if (lines.length >= maxLines) break;
+    } else {
+      current = test;
+    }
+  }
+  if (current && lines.length < maxLines) lines.push(current);
+  // Si nos quedamos cortos y truncamos, agregar "..." a la última
+  if (lines.length === maxLines && words.join(" ") !== lines.join(" ")) {
+    let last = lines[lines.length - 1];
+    while (ctx.measureText(last + "…").width > maxW && last.length > 5) {
+      last = last.slice(0, -1);
+    }
+    lines[lines.length - 1] = last + "…";
+  }
+  let cy = y;
+  for (const line of lines) {
+    ctx.fillText(line, cx, cy);
+    cy += lineH;
+  }
+  return cy;
+}
+
+// Condensa una descripción a un máximo de N caracteres, cortando en palabra completa
+function condenseDescription(desc, maxChars) {
+  if (!desc) return "";
+  desc = desc.trim();
+  if (desc.length <= maxChars) return desc;
+  const cut = desc.slice(0, maxChars);
+  const lastSpace = cut.lastIndexOf(" ");
+  return (lastSpace > 30 ? cut.slice(0, lastSpace) : cut).replace(/[.,;:]$/, "");
 }
 
 /* Menú vertical: filas con foto a la izquierda, nombre+precio a la derecha */
@@ -585,7 +663,7 @@ function drawProductRowMenu(ctx, L, rect, product, entryProgress, theme) {
   ctx.beginPath();
   roundRect(ctx, photoX, photoY, photoSize, photoSize, 22);
   ctx.clip();
-  drawImageCover(ctx, img, photoX, photoY, photoSize, photoSize);
+  drawImageCover(ctx, img, photoX, photoY, photoSize, photoSize, product.focalY ?? 0.5, product.focalX ?? 0.5);
   ctx.restore();
 
   // Badge (encima de la foto, esquina superior izquierda)
@@ -898,6 +976,17 @@ function setupControls() {
     });
   });
 
+  // Descripción toggle
+  document.querySelectorAll(".chip[data-desc]").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".chip[data-desc]").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      state.showDesc = chip.dataset.desc === "on";
+      renderStatic();
+      savePrefs();
+    });
+  });
+
   const titleIn = document.getElementById("in-title");
   const subIn = document.getElementById("in-subtitle");
   titleIn.addEventListener("input", () => {
@@ -926,23 +1015,31 @@ function setupControls() {
 async function exportPNG() {
   try {
     renderStatic();
-    const dataUrl = canvas.toDataURL("image/png");
-    if (!dataUrl || dataUrl === "data:,") {
-      throw new Error("El canvas no pudo generar la imagen (¿imagen no cargada?)");
+    // IMPORTANTE: usar toBlob (no toDataURL). Los dataURL grandes (>2MB) fallan silenciosamente
+    // en Safari y algunos Chrome. Blob + URL.createObjectURL no tiene ese límite.
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob(
+        (b) => b ? resolve(b) : reject(new Error("El canvas no pudo generar la imagen (¿tainted o vacío?)")),
+        "image/png"
+      );
+    });
+    if (blob.size < 1000) {
+      throw new Error(`Imagen demasiado pequeña (${blob.size} bytes). ¿Faltan fotos por cargar?`);
     }
+    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = dataUrl;
+    a.href = url;
     a.download = `delights-${state.style}-${state.theme}-${state.format}-${Date.now()}.png`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    showToast("Imagen descargada ✓");
-    console.log("[png] OK");
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    showToast(`Imagen · ${(blob.size/1024/1024).toFixed(1)} MB descargada ✓`);
+    console.log(`[png] OK · ${blob.size} bytes`);
   } catch (err) {
     console.error("[png] Falló:", err);
-    // Detectar el error clásico de canvas tainted
     if (err.name === "SecurityError" || String(err).includes("tainted")) {
-      showToast("Error de seguridad al exportar. Recargá la página y probá de nuevo.");
+      showToast("Error de seguridad al exportar. Recarga la página y prueba de nuevo.");
     } else {
       showToast(err.message || "Error al descargar la imagen");
     }
@@ -1049,30 +1146,26 @@ async function tryRecordCanvas(preferKind) {
   recorder.start(200);   // chunks cada 200ms — clave para Safari y algunas versiones de Chrome
   console.log(`[video] Recorder iniciado, state=${recorder.state}`);
 
-const totalFrames = Math.round((CFG.DURATION_MS / 1000) * CFG.FPS);
+  // Timing por TIEMPO REAL (performance.now) para garantizar que el video
+  // dura exactamente CFG.DURATION_MS wall-clock (8s), sin importar la velocidad del CPU.
+  // La timeline interna (dentro de renderFrame) decide qué animar y qué congelar.
+  const startT = performance.now();
   const recTime = document.getElementById("rec-time");
 
   await new Promise((resolve) => {
-    let currentFrame = 0;
-
-    function renderNextStep() {
-      const t = currentFrame / totalFrames;
+    function frame(now) {
+      const elapsed = now - startT;
+      const t = clamp(elapsed / CFG.DURATION_MS, 0, 1);
       renderFrame(t);
-
-      const elapsedSec = (t * (CFG.DURATION_MS / 1000)).toFixed(1);
-      recTime.textContent = elapsedSec;
-
-      if (currentFrame >= totalFrames) {
+      recTime.textContent = (elapsed / 1000).toFixed(1);
+      if (t >= 1) {
         renderFrame(1);
-        setTimeout(resolve, 500);
+        setTimeout(resolve, 300);
         return;
       }
-
-      currentFrame++;
-      setTimeout(renderNextStep, 1000 / CFG.FPS);
+      requestAnimationFrame(frame);
     }
-
-    renderNextStep();
+    requestAnimationFrame(frame);
   });
 
   if (recorder.state !== "inactive") {
@@ -1101,6 +1194,7 @@ function savePrefs() {
       format: state.format,
       style: state.style,
       theme: state.theme,
+      showDesc: state.showDesc,
       title: state.title,
       subtitle: state.subtitle,
       selectedIds: state.selectedIds,
@@ -1115,6 +1209,7 @@ function loadPrefs() {
     if (p.format && FORMATS[p.format]) state.format = p.format;
     if (p.style === "grid" || p.style === "menu") state.style = p.style;
     if (["warm","vino","rosa","terracota"].includes(p.theme)) state.theme = p.theme;
+    if (typeof p.showDesc === "boolean") state.showDesc = p.showDesc;
     if (typeof p.title === "string") state.title = p.title;
     if (typeof p.subtitle === "string") state.subtitle = p.subtitle;
     if (Array.isArray(p.selectedIds)) {
@@ -1149,6 +1244,9 @@ async function init() {
   });
   document.querySelectorAll(".chip[data-theme]").forEach(c => {
     c.classList.toggle("active", c.dataset.theme === state.theme);
+  });
+  document.querySelectorAll(".chip[data-desc]").forEach(c => {
+    c.classList.toggle("active", c.dataset.desc === (state.showDesc ? "on" : "off"));
   });
 
   renderPicker();

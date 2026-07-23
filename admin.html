@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin · Delights by VM</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- Password gate -->
+  <div id="gate">
+    <div class="gate-card">
+      <img src="assets/logo.png" alt="" class="gate-logo">
+      <h1>Admin</h1>
+      <p>Ingresa la clave para editar el catálogo</p>
+      <input type="password" id="gate-input" placeholder="Clave" autocomplete="current-password">
+      <button id="gate-btn">Entrar</button>
+      <span class="gate-hint" id="gate-msg"></span>
+    </div>
+  </div>
+
+  <!-- App -->
+  <div id="app" class="app-hidden">
+
+    <header class="ah">
+      <div class="brand">
+        <img src="assets/logo.png" alt="">
+        <div>
+          <h1>Admin del catálogo</h1>
+          <span>Editar precios, fotos, descripciones y orden</span>
+        </div>
+      </div>
+      <div class="ah-actions">
+        <span class="dirty-badge" id="dirty">Cambios sin guardar</span>
+        <button class="btn btn-ghost" id="btn-reset">Descartar cambios</button>
+        <button class="btn btn-primary" id="btn-download">Descargar products.js</button>
+        <a class="btn btn-outline" href="index.html">Sitio</a>
+      </div>
+    </header>
+
+    <div class="hint-bar">
+      <strong>Para que actualice:</strong>
+      Haz los cambios que quieras y cuando termines dale a: <b>Descargar products.js</b> y me lo pasas para hacer los cambios en el codigo
+       <code>products.js</code> . Las fotos nuevas
+      deben tambien me las pasas <code>en el google drive que tiene delights</code> con el nombre que le pongas acá.
+    </div>
+
+    <main class="admin-main">
+
+      <!-- LISTA DE PRODUCTOS -->
+      <section class="list-col">
+        <div class="list-head">
+          <h2>Postres <span id="count">0</span></h2>
+          <button class="btn btn-outline" id="btn-add">＋ Agregar postre</button>
+        </div>
+        <div id="product-list"></div>
+      </section>
+
+      <!-- PREVIEW -->
+      <aside class="preview-col">
+        <h2>Vista previa</h2>
+        <p class="prev-hint">Miniatura de cómo se verá en la página pública. Actualiza en vivo.</p>
+        <div id="preview-grid"></div>
+      </aside>
+    </main>
+
+  </div>
+
+  <!-- Modal de descarga -->
+  <div id="dl-modal" class="modal">
+    <div class="modal-inner">
+      <h2>Cambios listos ✓</h2>
+      <p>Se descargó <code>products.js</code>. Ahora:</p>
+      <ol>
+        <li>Reemplaza el archivo <code>products.js</code> en el repo de GitHub</li>
+        <li>Si agregaste fotos nuevas, súbelas a <code>assets/products/</code></li>
+        <li>Espera 1-2 min a que GitHub Pages actualice</li>
+      </ol>
+      <button class="btn btn-primary" id="modal-close">Entendido</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"><span id="toast-text"></span></div>
+
+  <script src="products.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
